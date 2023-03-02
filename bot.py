@@ -16,7 +16,7 @@ from utils import temp
 from typing import Union, Optional, AsyncGenerator
 from pyrogram import types
 
-PORT = "8080"
+PORT = "8000"
 
 class Bot(Client):
 
