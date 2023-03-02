@@ -7,7 +7,7 @@ logging.getLogger().setLevel(logging.INFO)
 logging.getLogger("pyrogram").setLevel(logging.ERROR)
 logging.getLogger("imdbpy").setLevel(logging.ERROR)
 
-from pyrogram import Client, __version__
+from pyrogram import Client, version
 from pyrogram.raw.all import layer
 from database.ia_filterdb import Media
 from database.users_chats_db import db
@@ -15,13 +15,15 @@ from info import SESSION, API_ID, API_HASH, BOT_TOKEN, LOG_STR
 from utils import temp
 from typing import Union, Optional, AsyncGenerator
 from pyrogram import types
+from aiohttp import web
+from plugins import web_server
 
-PORT = "8000"
+PORT = "8080"
 
 class Bot(Client):
 
-    def __init__(self):
-        super().__init__(
+    def init(self):
+        super().init(
             name=SESSION,
             api_id=API_ID,
             api_hash=API_HASH,
@@ -41,8 +43,12 @@ class Bot(Client):
         temp.ME = me.id
         temp.U_NAME = me.username
         temp.B_NAME = me.first_name
-        self.username = '@' + me.username      
-        logging.info(f"{me.first_name} with for Pyrogram v{__version__} (Layer {layer}) started on {me.username}.")
+        self.username = '@' + me.username
+        app = web.AppRunner(await web_server())
+        await app.setup()
+        bind_address = "0.0.0.0"
+        await web.TCPSite(app, bind_address, PORT).start()
+        logging.info(f"{me.first_name} with for Pyrogram v{version} (Layer {layer}) started on {me.username}.")
         logging.info(LOG_STR)
 
     async def stop(self, *args):
@@ -56,7 +62,7 @@ class Bot(Client):
         offset: int = 0,
     ) -> Optional[AsyncGenerator["types.Message", None]]:
         """Iterate through a chat sequentially.
-        This convenience method does the same as repeatedly calling :meth:`~pyrogram.Client.get_messages` in a loop, thus saving
+        This convenience method does the same as repeatedly calling :meth:~pyrogram.Client.get_messages in a loop, thus saving
         you from the hassle of setting up boilerplate code. It is useful for getting the whole chat messages with a
         single call.
         Parameters:
@@ -72,7 +78,7 @@ class Bot(Client):
                 Identifier of the first message to be returned.
                 Defaults to 0.
         Returns:
-            ``Generator``: A generator yielding :obj:`~pyrogram.types.Message` objects.
+            ``Generator``: A generator yielding :obj:~pyrogram.types.Message objects.
         Example:
             .. code-block:: python
                 for message in app.iter_messages("pyrogram", 1, 15000):
@@ -91,3 +97,4 @@ class Bot(Client):
 
 app = Bot()
 app.run()
+Footer
